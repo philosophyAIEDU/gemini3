@@ -97,7 +97,7 @@ if api_key:
         # Will의 최종 리뷰 및 컴파일
         if jenny_review and st.button("Will의 최종 보고서 작성"):
             try:
-                model = genai.GenerativeModel('gemini-pro')
+                model = genai.GenerativeModel('gemini-1.5-pro-002')
                 prompt = f"""당신은 Will입니다. 팀 리더로서 최종 보고서를 작성해야 합니다. 
                 Sam과 Jenny의 기여를 검토하고, 원본 논문의 모든 핵심 포인트가 다루어졌는지 확인하세요. 
                 단순화된 설명의 정확성을 검증하고, 일관된 톤과 스타일을 유지하며, 누락된 중요 정보를 추가하세요. 
