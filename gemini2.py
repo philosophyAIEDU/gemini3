@@ -4,122 +4,120 @@ from PyPDF2 import PdfReader
 import io
 
 # PDF 파일 읽기 함수
-def read_pdf(uploaded_file):
-    pdf_reader = PdfReader(io.BytesIO(uploaded_file.getvalue()))
+def read_pdf():
+    # PDF 파일 경로를 직접 지정
+    pdf_path = "company_intro.pdf"
+    pdf_reader = PdfReader(pdf_path)
     text = ""
     for page in pdf_reader.pages:
         text += page.extract_text()
     return text
 
-# Streamlit 앱 설정
-st.title("AI 연구 논문 리뷰 팀")
+# 페이지 기본 설정
+st.set_page_config(
+    page_title="제이씨현 시스템 신입사원 교육 도우미 🎓",
+    page_icon="🏢",
+    layout="wide"
+)
 
-# 팀 구조 및 역할 설명
-st.header("팀 구조 및 역할")
+# CSS 스타일 추가
 st.markdown("""
-1. Sam (AI PhD): 
-   - 논문 내용을 주의 깊게 읽고 핵심 포인트, 방법론, 발견 사항을 파악합니다.
-   - 논문의 내용을 간단한 용어로 설명하는 초기 초안을 작성합니다.
-   - 정확성에 중점을 두면서 명확성을 목표로 합니다.
+    <style>
+    .main {
+        background-color: #f5f7fb;
+    }
+    .stButton>button {
+        background-color: #3498db;
+        color: white;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        border: none;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-2. Jenny (AI & 교육 PhD): 
-   - Sam의 초기 초안을 검토합니다.
-   - 더 나은 이해를 위해 언어를 더욱 단순화합니다.
-   - 관련된 교육적 맥락과 실제 응용 사례를 추가합니다.
-   - 추가 설명이 필요한 영역을 확장합니다.
-   - 내용이 더 넓은 청중에게 접근 가능하도록 합니다.
+# 메인 타이틀
+st.title("제이씨현 시스템 신입사원 교육 도우미 🎓")
+st.markdown("---")
 
-3. Will (팀 리더): 
-   - Sam과 Jenny의 기여를 검토합니다.
-   - 원본 논문의 모든 핵심 포인트가 다루어졌는지 확인합니다.
-   - 단순화된 설명의 정확성을 검증합니다.
-   - 보고서 전체에 걸쳐 일관된 톤과 스타일을 유지합니다.
-   - 누락된 중요 정보를 추가합니다.
-   - 최적의 가독성을 위해 최종 보고서를 구조화합니다.
+# 환영 메시지
+st.markdown("""
+### 안녕하세요! 제이씨현 시스템 신입사원 여러분 환영합니다! 👋
+
+저희 교육 도우미 팀을 소개합니다:
+
+1. **Ted (기술전문가) 🤓**
+   - IT 및 기술 관련 전문 지식 제공
+   - 업무 관련 기술적 질문 답변
+   
+2. **Jane (교육전문가) 📚**
+   - 복잡한 개념을 쉽게 설명
+   - 업무 프로세스 가이드 제공
+   
+3. **Will (멘토) 🌟**
+   - 전반적인 안내 및 조언
+   - 회사 생활 적응 도움
 """)
 
-st.header("최종 보고서 구조")
-st.markdown("""
-1. 요약
-2. 연구 주제 소개
-3. 주요 발견 및 방법론
-4. 복잡한 개념의 간단한 설명
-5. 실제 응용 및 영향
-6. 결론 및 향후 연구 방향
-""")
-
-# API 키 입력 받기
-api_key = st.text_input("Gemini API 키를 입력하세요:", type="password")
+# API 키 입력 (숨김 처리)
+with st.sidebar:
+    st.markdown("### ⚙️ 시스템 설정")
+    api_key = st.text_input("Gemini API 키를 입력하세요:", type="password")
 
 if api_key:
-    # Gemini API 키 설정
     genai.configure(api_key=api_key)
-
-    # PDF 파일 업로드 기능 추가
-    uploaded_file = st.file_uploader("AI 연구 논문 PDF 파일을 업로드하세요", type="pdf")
-
-    if uploaded_file is not None:
-        pdf_content = read_pdf(uploaded_file)
+    
+    # 탭 생성
+    tab1, tab2 = st.tabs(["💬 질문하기", "📚 교육자료"])
+    
+    with tab1:
+        st.markdown("### 궁금한 점을 물어보세요! 🤔")
+        user_question = st.text_area("질문을 입력해주세요:", 
+                                   placeholder="예: 회사의 주요 제품은 무엇인가요?")
         
-        # 각 팀원의 분석 결과를 저장할 변수
-        sam_analysis = ""
-        jenny_review = ""
-        will_final_report = ""
-        
-        # Sam의 초기 분석
-        if st.button("Sam의 초기 분석 시작"):
+        if st.button("답변 받기 ✨"):
             try:
-                model = genai.GenerativeModel('gemini-pro')
-                prompt = f"""당신은 Sam입니다. AI PhD 졸업생으로 복잡한 AI 개념을 분석하는 전문가입니다. 
-                다음 AI 연구 논문의 내용을 주의 깊게 읽고, 핵심 포인트, 방법론, 발견 사항을 파악하여 
-                간단한 용어로 설명해주세요. 정확성에 중점을 두면서 명확성을 목표로 하세요:\n\n{pdf_content}"""
-                response = model.generate_content(prompt)
-                sam_analysis = response.text
-                st.write("Sam의 분석:")
-                st.write(sam_analysis)
+                with st.spinner("답변을 생성중입니다... 🤖"):
+                    model = genai.GenerativeModel('gemini-pro')
+                    prompt = f"""당신은 제이씨현 시스템의 신입사원 교육 도우미입니다.
+                    다음 질문에 대해 친절하고 명확하게 답변해주세요. 
+                    이모티콘을 적절히 사용하고, 필요한 경우 예시를 들어 설명해주세요.
+                    질문: {user_question}"""
+                    response = model.generate_content(prompt)
+                    st.success("답변이 준비되었습니다! 📝")
+                    st.write(response.text)
             except Exception as e:
-                st.error(f"오류가 발생했습니다: {str(e)}")
+                st.error(f"죄송합니다. 오류가 발생했습니다 😢: {str(e)}")
+    
+    with tab2:
+        st.markdown("### 교육 자료 업로드 및 분석 📚")
+        uploaded_file = st.file_uploader("PDF 파일을 업로드해주세요", type="pdf")
         
-        # Jenny의 리뷰 및 개선
-        if sam_analysis and st.button("Jenny의 리뷰 시작"):
-            try:
-                model = genai.GenerativeModel('gemini-pro')
-                prompt = f"""당신은 Jenny입니다. AI와 교육 분야의 PhD를 보유하고 있습니다. 
-                Sam의 초기 분석을 검토하고 더 단순화하세요. 교육적 맥락과 실제 응용 사례를 추가하고, 
-                필요한 영역을 확장하여 더 넓은 청중이 이해할 수 있도록 만드세요:\n\n{sam_analysis}"""
-                response = model.generate_content(prompt)
-                jenny_review = response.text
-                st.write("Jenny의 리뷰:")
-                st.write(jenny_review)
-            except Exception as e:
-                st.error(f"오류가 발생했습니다: {str(e)}")
-        
-        # Will의 최종 리뷰 및 컴파일
-        if jenny_review and st.button("Will의 최종 보고서 작성"):
-            try:
-                model = genai.GenerativeModel('gemini-1.5-pro-002')
-                prompt = f"""당신은 Will입니다. 팀 리더로서 최종 보고서를 작성해야 합니다. 
-                Sam과 Jenny의 기여를 검토하고, 원본 논문의 모든 핵심 포인트가 다루어졌는지 확인하세요. 
-                단순화된 설명의 정확성을 검증하고, 일관된 톤과 스타일을 유지하며, 누락된 중요 정보를 추가하세요. 
-                다음 구조를 따라 최종 보고서를 작성해주세요:
+        if uploaded_file is not None:
+            with st.spinner("파일을 분석중입니다... 📊"):
+                pdf_content = read_pdf(uploaded_file)
+                st.success("파일 분석이 완료되었습니다! ✅")
+                
+                if st.button("자료 요약 보기 📋"):
+                    try:
+                        model = genai.GenerativeModel('gemini-pro')
+                        prompt = f"""다음 교육 자료의 주요 내용을 요약하고, 
+                        핵심 포인트를 3-5개로 정리해주세요:\n\n{pdf_content}"""
+                        response = model.generate_content(prompt)
+                        st.write(response.text)
+                    except Exception as e:
+                        st.error(f"요약 중 오류가 발생했습니다 😢: {str(e)}")
 
-                1. 요약
-                2. 연구 주제 소개
-                3. 주요 발견 및 방법론
-                4. 복잡한 개념의 간단한 설명
-                5. 실제 응용 및 영향
-                6. 결론 및 향후 연구 방향
-
-                Sam의 분석: {sam_analysis}
-
-                Jenny의 리뷰: {jenny_review}"""
-                response = model.generate_content(prompt)
-                will_final_report = response.text
-                st.write("Will의 최종 보고서:")
-                st.write(will_final_report)
-            except Exception as e:
-                st.error(f"오류가 발생했습니다: {str(e)}")
-    else:
-        st.warning("PDF 파일을 업로드해주세요.")
 else:
-    st.warning("API 키를 입력해주세요.")
+    st.warning("🔑 서비스 이용을 위해 API 키를 입력해주세요!")
+
+# 푸터 추가
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center'>
+    <p>제이씨현 시스템 신입사원 교육 도우미 v1.0 | 도움이 필요하시면 언제든 물어보세요! 😊</p>
+</div>
+""", unsafe_allow_html=True)
